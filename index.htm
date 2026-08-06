@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contenido Dinámico QR</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+    }
+    .card {
+      background-color: #1e293b;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 100%;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    img, video {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="contenedor">
+    <h1>Cargando contenido...</h1>
+  </div>
+
+  <script>
+    // 1. CONFIGURACIÓN: Ajusta la fecha de cambio y tus URLs
+    // Formato: AAAA-MM-DDTHH:mm:ss
+    const FECHA_CAMBIO = new Date('2026-08-07T00:00:00');
+
+    const URL_FOTO = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80';
+    const URL_VIDEO = 'https://www.w3schools.com/html/mov_bbb.mp4';
+
+    // OPTATIVO: Si prefieres REDIRIGIR fuera de la página en lugar de mostrarlo aquí,
+    // cambia esta variable a true:
+    const REDIRIGIR_EXTERNO = false;
+
+    // 2. LÓGICA DE EVALUACIÓN
+    const ahora = new Date();
+    const contenedor = document.getElementById('contenedor');
+
+    if (ahora < FECHA_CAMBIO) {
+      // ANTES DE LA FECHA (Hoy) -> Foto
+      if (REDIRIGIR_EXTERNO) {
+        window.location.href = URL_FOTO;
+      } else {
+        contenedor.innerHTML = `
+          <h1>Promoción de Hoy</h1>
+          <img src="${URL_FOTO}" alt="Foto promocional">
+        `;
+      }
+    } else {
+      // DESPUÉS DE LA FECHA (Mañana en adelante) -> Video
+      if (REDIRIGIR_EXTERNO) {
+        window.location.href = URL_VIDEO;
+      } else {
+        contenedor.innerHTML = `
+          <h1>Lanzamiento Oficial</h1>
+          <video controls autoplay loop muted playsinline>
+            <source src="${URL_VIDEO}" type="video/mp4">
+            Tu navegador no soporta reproducción de video.
+          </video>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
