@@ -3,7 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contenido Dinámico QR</title>
+  <title>Escaneo QR Dinámico</title>
+  <!-- Google Analytics / Tag Manager (Opcional: Reemplaza G-XXXXXXXXXX por tu ID) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -25,8 +33,14 @@
       max-width: 600px;
       width: 100%;
     }
-    h1 {
-      font-size: 1.5rem;
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      background-color: #38bdf8;
+      color: #0f172a;
+      font-weight: bold;
       margin-bottom: 1rem;
     }
     img, video {
@@ -40,48 +54,75 @@
 <body>
 
   <div class="card" id="contenedor">
-    <h1>Cargando contenido...</h1>
+    <h1>Procesando escaneo...</h1>
   </div>
 
   <script>
-    // 1. CONFIGURACIÓN: Ajusta la fecha de cambio y tus URLs
-    // Formato: AAAA-MM-DDTHH:mm:ss
+    // --- 1. CONFIGURACIÓN DE REGLAS ---
     const FECHA_CAMBIO = new Date('2026-08-07T00:00:00');
 
-    const URL_FOTO = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80';
-    const URL_VIDEO = 'https://www.w3schools.com/html/mov_bbb.mp4';
+    const RECURSOS = {
+      foto: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+      video: 'https://www.w3schools.com/html/mov_bbb.mp4'
+    };
 
-    // OPTATIVO: Si prefieres REDIRIGIR fuera de la página en lugar de mostrarlo aquí,
-    // cambia esta variable a true:
-    const REDIRIGIR_EXTERNO = false;
+    // --- 2. DETECCIÓN DE DISPOSITIVO ---
+    function obtenerDispositivo() {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      if (/android/i.test(ua)) return 'Android';
+      if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) return 'iOS';
+      return 'Desktop / Otro';
+    }
 
-    // 2. LÓGICA DE EVALUACIÓN
+    // --- 3. REGISTRO DE ESTADÍSTICAS ---
+    function registrarEscaneo(dispositivo, tipoContenido) {
+      const evento = {
+        fecha: new Date().toISOString(),
+        dispositivo: dispositivo,
+        contenidoMostrado: tipoContenido
+      };
+
+      // A) Google Analytics Event (si configuraste tu ID)
+      if (typeof gtag === 'function') {
+        gtag('event', 'qr_scan', {
+          'device_type': dispositivo,
+          'content_type': tipoContenido
+        });
+      }
+
+      // B) Almacenamiento Local (para pruebas y vista previa en stats.html)
+      let historial = JSON.parse(localStorage.getItem('qr_stats') || '[]');
+      historial.push(evento);
+      localStorage.setItem('qr_stats', JSON.stringify(historial));
+    }
+
+    // --- 4. EJECUCIÓN Y RENDERIZADO ---
+    const dispositivo = obtenerDispositivo();
     const ahora = new Date();
     const contenedor = document.getElementById('contenedor');
 
     if (ahora < FECHA_CAMBIO) {
-      // ANTES DE LA FECHA (Hoy) -> Foto
-      if (REDIRIGIR_EXTERNO) {
-        window.location.href = URL_FOTO;
-      } else {
-        contenedor.innerHTML = `
-          <h1>Promoción de Hoy</h1>
-          <img src="${URL_FOTO}" alt="Foto promocional">
-        `;
-      }
+      // HOY: Mostrar Foto + Personalización por dispositivo
+      registrarEscaneo(dispositivo, 'Foto');
+      
+      contenedor.innerHTML = `
+        <span class="badge">Detectado: ${dispositivo}</span>
+        <h1>Promoción Exclusiva</h1>
+        <p>Bienvenido usuario de ${dispositivo}</p>
+        <img src="${RECURSOS.foto}" alt="Foto promocional">
+      `;
     } else {
-      // DESPUÉS DE LA FECHA (Mañana en adelante) -> Video
-      if (REDIRIGIR_EXTERNO) {
-        window.location.href = URL_VIDEO;
-      } else {
-        contenedor.innerHTML = `
-          <h1>Lanzamiento Oficial</h1>
-          <video controls autoplay loop muted playsinline>
-            <source src="${URL_VIDEO}" type="video/mp4">
-            Tu navegador no soporta reproducción de video.
-          </video>
-        `;
-      }
+      // MAÑANA: Mostrar Video
+      registrarEscaneo(dispositivo, 'Video');
+
+      contenedor.innerHTML = `
+        <span class="badge">Detectado: ${dispositivo}</span>
+        <h1>Lanzamiento Oficial</h1>
+        <p>Contenido en video para ${dispositivo}</p>
+        <video controls autoplay loop muted playsinline>
+          <source src="${RECURSOS.video}" type="video/mp4">
+        </video>
+      `;
     }
   </script>
 </body>
